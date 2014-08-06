@@ -1,11 +1,13 @@
-using MySql.Data.MySqlClient;
 using System;
-using System.Collections.Generic;
 using System.Data;
+using MySql.Data.MySqlClient;
+using System.Collections.Generic;
 
-/// <summary> DataRepository v1.0.2.7, <para></para>
-/// Enthusiast: Bruno Casali entre 07/11/2013 e 10/12/2013   
+/// <summary>
+/// <para>DataRepository v2.0.9,</para>
+/// Enthusiast: Bruno Casali between 07/11/2013 and 10/12/2013 - Contact: http://about.me/brunocasali
 /// <!--
+/// Last modifies: Wed, July 16/2014
 /// You Wanted the Best and You Got the Best. The Hottest Band in the World, KISS!
 /// Background Song Night Gone Wasted by The Band Perry and anothers... :D
 /// -->
@@ -13,15 +15,19 @@ using System.Data;
 
 public sealed class DataRepository
 {
-    /// <summary> Connect Data   ||
-    /// Esse método não recebe nenhum parâmetro.
+    /// <summary>
+    /// <para>Alter the registers/records by INSERTS / DELETES / UPDATES ;D </para>
     /// </summary>
-    /// <returns> retorna sempre uma nova conexão com o MySQL</returns>
-    public static MySqlConnection ConnectData()
+    /// <param name="hash">Set of keys and values to be inner on query string by parameters.</param>
+    /// <param name="querySQL">Some query to be executed on MySQL. It can be an INSERT or DELETE or UPDATE </param>
+    /// <returns>The operation has been executed. It is OK, (True or False!) ;D</returns>
+    public static bool ChangeRecords(Dictionary<string, object> hash, string querySQL)
     {
         try
         {
-            return dbConnect.SiteConnection();
+            MySqlCommand cmd = MakeCommand(hash, querySQL);
+            cmd.Connection.Open();
+            return cmd.ExecuteNonQuery() > 0 ? true : false;
         }
         catch (MySqlException ex)
         {
@@ -33,27 +39,19 @@ public sealed class DataRepository
         }
     }
 
-    /// <summary> Change Registers,
-    /// <para>Cria dinâmicamente os INSERTS / DELETES / UPDATES ;D </para> <para>OBS: Os Nomes e os Valores, devem ser colocados na mesma ordem, dentro do array!</para>
+    /// <summary>
+    /// How many elements that table has?! Yeah with this method you can get the answer!
     /// </summary>
-    /// <param name="names"> Um Array de String para formar os nomes dos parameters.add</param>
-    /// <param name="values"> Um Array de Objetos, vai ser qualquer tipo vão os valores dos atributos</param>
-    /// <param name="querySQL"> A String de ação do SQL, que pode ser um INSERT, DELETE, UPDATE com todos os nomes dos parâmetros já carregados</param>
-    /// <returns>If the operation is OK, (True or False!) ;D</returns>
-    public static bool ChangeRecords(string[] names, object[] values, string querySQL)
+    /// <param name="tableName">What table you need to know!</param>
+    /// <returns>The actual number of rows!</returns>
+    public static int Total(string tableName)
     {
         try
         {
-            using (MySqlConnection coon = DataRepository.ConnectData())
+            using (DataTable dt = DataLoad(new Dictionary<string, object>(), string.Format(@"SELECT COUNT(*) AS Total FROM {0};", tableName)))
             {
-                using (MySqlCommand cmd = new MySqlCommand(querySQL, coon))
-                {
-                    for (int i = 0; i < names.Length; i++)
-                        cmd.Parameters.AddWithValue("@" + names[i], values[i]);
-
-                    coon.Open();
-                    return cmd.ExecuteNonQuery() == 0 ? false : true;
-                }
+                DataRow dr = dt.Rows[0];
+                return !dr.IsNull("Total") ? Convert.ToInt32(dr["Total"]) : 0;
             }
         }
         catch (MySqlException ex)
@@ -66,82 +64,16 @@ public sealed class DataRepository
         }
     }
 
-    /// <summary> Carregar DataTable   ||
-    /// SELECTS ;D            --> IMPORTANTE LEMBRAR: Os nomes e os Valores, devem ser colocados na mesma ordem, dentro do array!
+    /// <summary>
+    /// Get's the next valid ID from inputted tableName. This value is based on primary key or AUTO_INCREMENT fields from table!
     /// </summary>
-    /// <param name="names">Recebem todos os nomes dos parâmetros que serão inseridos dentro da QuerySQL</param>
-    /// <param name="values"> Aqui entra todos os valores que deverão ser substituídos na QuerySQL</param>
-    /// <param name="querySQL"> Recebe aqui a ideia da Query, ou seja o esqueleto dela, sem parâmetros sem nada. somente com os nomes dos parâmetros</param>
-    /// <returns> Retorna um Data Table para ser recuperado, pelos métodos de negócio.</returns>
-    public static DataTable DataLoad(string[] names, object[] values, string querySQL)
-    {
-        using (MySqlConnection coon = DataRepository.ConnectData())
-        {
-            using (MySqlCommand cmd = new MySqlCommand(querySQL, coon))
-            {
-                for (int i = 0; i < names.Length; i++)
-                    cmd.Parameters.AddWithValue("@" + names[i], values[i]);
-
-                using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
-                {
-                    using (DataTable dt = new DataTable())
-                    {
-                        da.Fill(dt);
-                        return dt;
-                    }
-                }
-            }
-        }
-    }
-
-    /// <summary> TotalRegistros   ||
-    /// Reconhece a Quantidade de elementos de uma tabelaa.
-    /// </summary>
-    /// <param name="nomeTabela">Requer o nome da tabela como parâmetro.</param>
-    /// <returns>O Número de Registros atual!</returns>
-    public static int Total(string nomeTabela)
+    /// <param name="tableName">The table you want to know!</param>
+    public static int NextValidID(string tableName)
     {
         try
         {
-            using (MySqlCommand cmd = new MySqlCommand(string.Format(@"SELECT COUNT(*) AS Total FROM {0};", nomeTabela), DataRepository.ConnectData()))
+            using (DataTable dt = DataLoad(new Dictionary<string, object>() { { "tbl", tableName } }, @"SELECT AUTO_INCREMENT AS NextID FROM INFORMATION_SCHEMA.TABLES WHERE table_name = @tbl;"))
             {
-                using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
-                {
-                    using (DataTable dt = new DataTable())
-                    {
-                        da.Fill(dt);
-
-                        DataRow dr = dt.Rows[0];
-                        return !dr.IsNull("Total") ? Convert.ToInt32(dr["Total"]) : 0;
-                    }
-                }
-            }
-        }
-        catch (MySqlException ex)
-        {
-            throw ex;
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
-    }
-
-    /// <summary> Próximo ID Válido ||
-    /// Recupera o Próximo ID válido baseado no auto_increment do índice primário da tabela (ID)
-    /// </summary>
-    /// <param name="nomeTabela">Nome da tabela em questão</param>
-    public static int NextValidID(string nomeTabela)
-    {
-        try
-        {
-            using (MySqlCommand cmd = new MySqlCommand(@"SELECT AUTO_INCREMENT AS NextID FROM INFORMATION_SCHEMA.TABLES WHERE table_name = @tbl;", DataRepository.ConnectData()))
-            {
-                cmd.Parameters.AddWithValue("@tbl", nomeTabela);
-                MySqlDataAdapter da = new MySqlDataAdapter(cmd);
-                DataTable dt = new DataTable();
-                da.Fill(dt);
-
                 DataRow dr = dt.Rows[0];
                 return !dr.IsNull("NextID") ? Convert.ToInt32(dr["NextID"]) : 0;
             }
@@ -156,26 +88,43 @@ public sealed class DataRepository
         }
     }
 
-    /// <summary> Carregar DataTable   ||
-    /// SELECTS ;D            --> IMPORTANTE LEMBRAR: Os nomes e os Valores, devem ser colocados na mesma ordem, dentro do array!
+    /// <summary>
+    /// This method gives me a new connection on MySQL
     /// </summary>
-    /// <param name="names">Recebem todos os nomes dos parâmetros que serão inseridos dentro da QuerySQL</param>
-    /// <param name="values"> Aqui entra todos os valores que deverão ser substituídos na QuerySQL</param>
-    /// <param name="querySQL"> Recebe aqui a ideia da Query, ou seja o esqueleto dela, sem parâmetros sem nada. somente com os nomes dos parâmetros</param>
-    /// <param name="func"> Requer um método que retorne um objeto do tipo T, extenda a classe </param>
-    /// <returns> Retorna um Data Table para ser recuperado, pelos métodos de negócio.</returns>
-    public static List<T> List<T>(string[] names, object[] values, string querySQL, Func<DataRow, T> func)
+    /// <returns>A new connection with the params inputted in query string for connection! :D</returns>
+    public static MySqlConnection ConnectData()
     {
         try
         {
-            using (DataTable dt = DataLoad(names, values, querySQL))
+            return new MySqlConnection("Server=HOST;Database=DATABASE;User=USER;Password=PASSWORD;Pooling=true;");
+        }
+        catch (MySqlException ex)
+        {
+            throw ex;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Get all of rows, that will be satisfact the sql query.
+    /// </summary>
+    /// <param name="hash">All of keys and yours values, that will be replaced on querySQL</param>
+    /// <param name="querySQL">An SELECT wished query!</param>
+    /// <returns>A List with all of rows!</returns>
+    public static List<T> List<T>(Dictionary<string, object> hash, string querySQL, Func<DataRow, T> func)
+    {
+        try
+        {
+            using (DataTable dt = DataLoad(hash, querySQL))
             {
                 List<T> lst = new List<T>();
 
                 foreach (DataRow dr in dt.Rows)
-                {
                     lst.Add(func(dr));
-                }
+
                 return lst;
             }
         }
@@ -186,6 +135,58 @@ public sealed class DataRepository
         catch (Exception ex)
         {
             throw new Exception(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Dynamic load parameters to query.
+    /// </summary>
+    /// <param name="hash">All of keys and yours values, that will be replaced on querySQL</param>
+    /// <param name="querySQL">An SELECT wished query!</param>
+    /// <returns>A new DataTable with all of parameters required.</returns>
+    private static DataTable DataLoad(Dictionary<string, object> hash, string querySQL)
+    {
+        try
+        {
+            MySqlCommand cmd = MakeCommand(hash, querySQL);
+
+            using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
+            {
+                using (DataTable dt = new DataTable())
+                {
+                    da.Fill(dt);
+                    return dt;
+                }
+            }
+        }
+        catch (MySqlException ex)
+        {
+            throw ex;
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(ex.Message);
+        }
+    }
+    
+    /// <summary>
+    /// Reusing code...
+    /// </summary>
+    /// <returns>Return new command to do something do you need!</returns>
+    private static MySqlCommand MakeCommand(Dictionary<string, object> hash, string querySQL)
+    {
+        using (MySqlConnection coon = DataRepository.ConnectData())
+        {
+            using (MySqlCommand cmd = new MySqlCommand(querySQL, coon))
+            {
+                object obj;
+                foreach (string item in hash.Keys)
+                {
+                    hash.TryGetValue(item, out obj);
+                    cmd.Parameters.AddWithValue("@" + item, obj);
+                }
+                return cmd;
+            }
         }
     }
 }
