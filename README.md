@@ -19,12 +19,14 @@ An pretty simple, and easy form to use ADO .NET C#
 ------------  
 First Of All!
 ------------
-**2.1 - Installing**
+**1.1 - Installing**
 
 *You just have to download the archive class: data_repository.cs, and if you want the business_repository.cs to more explanation scroll down at the 3.1 section!*
 
 
-
+------------  
+Type of Methods!
+------------
 **2.1 - Modifiers**
 
 *Methods that will be modify rows, (INSERT, UPDATE, DELETE)*
