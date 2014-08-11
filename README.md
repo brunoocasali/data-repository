@@ -18,21 +18,22 @@ Just download the class files, put in your App_Code directory and enjoy!
   - Accompaniments!
     - **3.1** BusinessRepository&lt;T&gt;
 
-------------  
+-------------
 First Of All!
-------------
+-------------
 **1.1 - Installing**
 
 *You just have to download the archive class: data_repository.cs, and if you want the business_repository.cs to more explanation scroll down at the 3.1 section!*
 
 
-------------  
+----------------
 Type of Methods!
-------------
+----------------
 **2.1 - Modifiers**
 
 *Methods that will be modify rows, (INSERT, UPDATE, DELETE)*
-
+ 
+ Eg.:
 ```
 public bool Add()
 {
@@ -49,7 +50,8 @@ public bool Add()
 }
 ```
 
-Instead of:
+
+Instead of use this very old and ugly form:
 
 
 ```
@@ -79,3 +81,46 @@ public bool Add()
   return isOk;
 }
 ```
+
+And its the same of UPDATE and DELETE methods, just changing the parameters and query of course!
+
+
+**2.2** Retrieves
+
+To SELECT query statements you need one more method in your type class.
+There is no pattern about the name. Here I just call him, FillAttributes;
+He'll be used like as a Func&lt;DataRow&gt;.
+
+
+See:
+```
+protected override Tag FillAttributes(DataRow dr)
+{
+  return new Tag
+  {
+    ID = !dr.IsNull("id") ? Convert.ToInt32(dr["id"]) : 0,
+    Name = !dr.IsNull("name") ? Convert.ToString(dr["name"]) : "",
+    Uri = !dr.IsNull("uri") ? Convert.ToString(dr["uri"]) : "",
+    TotalPosts = !dr.IsNull("total_posts") ? Convert.ToString(dr["total_posts"]) : "" 
+  };
+}
+```
+
+And you'll need him on these code (kept at tag.cs!)
+
+```
+public List<Tag> List(int now, int end)
+{
+  try
+  {
+    string strSQL = @"SELECT * FROM tbl_catalogs ORDER BY id DESC LIMIT @now, @end;";
+    return DataRepository.List(new Dictionary<string, object>() { {"now", now}, {"end", end} },
+                               strSQL, FillAttributes);
+  }
+  catch (Exception e)
+  {
+    throw new Exception(e.Message);
+}
+```
+
+
