@@ -13,8 +13,10 @@ using System.Collections.Generic;
 /// -->
 /// </summary>
 
-public sealed class DataRepository
+namespace DataRepository
 {
+    public sealed class DataRepository
+    {
     /// <summary>
     /// <para>Alter the registers/records by INSERTS / DELETES / UPDATES ;D </para>
     /// </summary>
@@ -190,3 +192,4 @@ public sealed class DataRepository
         }
     }
 }
+}d
