@@ -4,7 +4,7 @@ using MySql.Data.MySqlClient;
 using System.Collections.Generic;
 
 /// <summary>
-/// <para>DataRepository v2.0.9,</para>
+/// <para>DataRepository v2.1.7,</para>
 /// Enthusiast: Bruno Casali between 07/11/2013 and 10/12/2013 - Contact: http://about.me/brunocasali
 /// <!--
 /// Last modifies: Wed, July 16/2014
