@@ -14,6 +14,7 @@ Just download the class files, put in your App_Code directory and enjoy!
   - Type of Methods!
     - **2.1** Modifiers
     - **2.2** Retrieves
+      - **2.2.1** Extension Method (Verify)
     
   - Accompaniments!
     - **3.1** BusinessRepository&lt;T&gt;
@@ -85,7 +86,7 @@ public bool Add()
 And its the same of UPDATE and DELETE methods, just changing the parameters and query of course!
 
 
-**2.2** Retrieves
+**2.2 Retrieves**
 
 To SELECT query statements you need one more method in your type class.
 There is no pattern about the name. Here I just call him, FillAttributes;
@@ -98,10 +99,10 @@ protected override Tag FillAttributes(DataRow dr)
 {
   return new Tag
   {
-    ID = !dr.IsNull("id") ? Convert.ToInt32(dr["id"]) : 0,
-    Name = !dr.IsNull("name") ? Convert.ToString(dr["name"]) : "",
-    Uri = !dr.IsNull("uri") ? Convert.ToString(dr["uri"]) : "",
-    TotalPosts = !dr.IsNull("total_posts") ? Convert.ToString(dr["total_posts"]) : "" 
+    ID = dr.Verify("id", Convert.ToInt32),
+    Name = dr.Verify("name", Convert.ToString),
+    Uri = dr.Verify("uri", Convert.ToString),
+    TotalPosts = dr.Verify("total_posts", Convert.ToString) 
   };
 }
 ```
@@ -123,4 +124,6 @@ public List<Tag> List(int now, int end)
 }
 ```
 
+**2.2.1 Extension Method**
 
+The method exemplicated before this explanation, verify all of collumns that comes into the DataRow object. In this form, you need define only once the method `FillAtributes`.
