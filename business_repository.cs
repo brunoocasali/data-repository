@@ -1,6 +1,6 @@
 using System.Data;
 
-/// <summary> BusinessRepository v0.3.2.0,
+/// <summary> BusinessRepository v1.2.0, 
 /// <para></para>
 /// Made by Bruno Casali at Tuesday, June 25, 2014 :/
 /// <!--
