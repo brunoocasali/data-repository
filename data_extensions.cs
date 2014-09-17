@@ -12,7 +12,7 @@ namespace DataRepository.Extensions
 {
     public static class Extensions
     {
-        public static dynamic Verify<T>(this DataRow dr, string nameCollum, Func<object, T> func)
+        public static dynamic Verify<T>(this DataRow dr, string nameCollum, Func<object, T> func, T defaultValue = default(T))
         {
             bool ok = false;
             foreach (DataColumn item in dr.Table.Columns)
@@ -27,12 +27,12 @@ namespace DataRepository.Extensions
             if (ok)
             {
                 if (dr[nameCollum] is DBNull)
-                    return default(T);
+                    return defaultValue;
                 else
                     return func(dr[nameCollum]);
             }
             else
-                return default(T);
+                return defaultValue;
         }
     }
 }
