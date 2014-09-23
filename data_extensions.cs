@@ -12,17 +12,14 @@ namespace DataRepository.Extensions
 {
     public static class Extensions
     {
-        public static dynamic Verify<T>(this DataRow dr, string nameCollumn, Func<object, T> func, T defaultValue = default(T))
+        public static dynamic Verify<T>(this DataRow dr, string nameCollumn, 
+                                        Func<object, T> func, T defaultValue = default(T))
         {
-            if (dr.Table.Columns.Contains(nameCollumn))
-            {
-                if (dr[nameCollumn] is DBNull)
-                    return defaultValue;
-                else
-                    return func(dr[nameCollumn]);
-            }
-            else
+            if (!dr.Table.Columns.Contains(nameCollumn))
                 return defaultValue;
+
+            return dr.IsNull(nameCollumn) ? defaultValue
+                                          : func(dr[nameCollumn]);
         }
     }
 }
