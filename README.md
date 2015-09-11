@@ -35,7 +35,7 @@ Type of Methods!
 *Methods that will be modify rows, (INSERT, UPDATE, DELETE)*
  
  Eg.:
-```
+```cs
 public bool Add()
 {
   try
@@ -55,7 +55,7 @@ public bool Add()
 Instead of use this very old and ugly form:
 
 
-```
+```cs
 public bool Add()
 {
   bool isOk = false;
@@ -94,7 +94,7 @@ He'll be used like as a Func&lt;DataRow&gt;.
 
 
 See:
-```
+```cs
 protected override Tag FillAttributes(DataRow dr)
 {
   return new Tag
@@ -109,7 +109,7 @@ protected override Tag FillAttributes(DataRow dr)
 
 And you'll need him on these code (kept at tag.cs!)
 
-```
+```cs
 public List<Tag> List(int now, int end)
 {
   try
